@@ -94,3 +94,100 @@ setInterval(() => {
     }
   }
 }, 500);
+
+// 6. Background Slideshow & Now Playing Info
+const slideshowContainer = document.createElement('div');
+slideshowContainer.className = 'slideshow-container';
+document.querySelector('.background-container').prepend(slideshowContainer);
+
+const npDisplay = document.createElement('div');
+npDisplay.className = 'now-playing-display';
+npDisplay.innerHTML = `
+  <div class="np-label"><i class="ph ph-speaker-high"></i> Now Playing</div>
+  <div class="np-title" id="np-title">Loading...</div>
+  <div class="np-artist" id="np-artist">Loading...</div>
+`;
+document.body.appendChild(npDisplay);
+
+const aestheticImages = [
+  './bg.jpg', // Default night
+  './bg-day.jpg', // Default day
+  'https://images.unsplash.com/photo-1517686469429-8bdb88b9f907?q=80&w=1920', // Moody cafe
+  'https://images.unsplash.com/photo-1499882200388-348df8402f1a?q=80&w=1920', // Rainy window
+  'https://images.unsplash.com/photo-1485182708500-e8f1f318ba72?q=80&w=1920'  // Lofi sunset
+];
+
+let currentSlideIndex = 0;
+let currentVideoId = null;
+let slideInterval = null;
+
+// Initialize slide layers
+const layer1 = document.createElement('img');
+layer1.className = 'slide-layer active';
+layer1.src = aestheticImages[0];
+const layer2 = document.createElement('img');
+layer2.className = 'slide-layer';
+slideshowContainer.appendChild(layer1);
+slideshowContainer.appendChild(layer2);
+
+let activeLayer = 1;
+
+function crossfadeSlide(imgSrc) {
+  if (activeLayer === 1) {
+    layer2.src = imgSrc;
+    layer2.onload = () => {
+      layer2.classList.add('active');
+      layer1.classList.remove('active');
+      activeLayer = 2;
+    };
+  } else {
+    layer1.src = imgSrc;
+    layer1.onload = () => {
+      layer1.classList.add('active');
+      layer2.classList.remove('active');
+      activeLayer = 1;
+    };
+  }
+}
+
+function startSlideshow() {
+  if (slideInterval) clearInterval(slideInterval);
+  // Hide the hardcoded backgrounds so our slideshow is visible
+  document.getElementById('bg-night').style.display = 'none';
+  document.getElementById('bg-day').style.display = 'none';
+  
+  slideInterval = setInterval(() => {
+    currentSlideIndex = (currentSlideIndex + 1) % aestheticImages.length;
+    crossfadeSlide(aestheticImages[currentSlideIndex]);
+  }, 12000); // 12 seconds per slide
+}
+
+// Hook into Track Changes
+setInterval(() => {
+  if (typeof player !== 'undefined' && typeof player.getVideoData === 'function') {
+    const videoData = player.getVideoData();
+    if (videoData && videoData.video_id) {
+      if (videoData.video_id !== currentVideoId) {
+        currentVideoId = videoData.video_id;
+        
+        // Update Now Playing Info
+        document.getElementById('np-title').textContent = videoData.title || 'Unknown Track';
+        document.getElementById('np-artist').textContent = videoData.author || 'Unknown Artist';
+        npDisplay.classList.add('visible');
+        
+        // Inject YouTube thumbnail into the slideshow mix (at index 2)
+        const thumbUrl = `https://img.youtube.com/vi/${videoData.video_id}/maxresdefault.jpg`;
+        aestheticImages[2] = thumbUrl; 
+        
+        // Immediately crossfade to the song's thumbnail for immersion
+        crossfadeSlide(thumbUrl);
+        
+        // Restart the slideshow timer
+        startSlideshow();
+      }
+    } else {
+      npDisplay.classList.remove('visible');
+    }
+  }
+}, 1000);
+

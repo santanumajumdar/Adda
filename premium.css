@@ -247,3 +247,70 @@ a, button, input {
   align-items: center;
   gap: 10px;
 }
+
+/* =========================================
+   NOW PLAYING & SLIDESHOW
+========================================= */
+.slideshow-container {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -2; /* Behind the night/day bg, but we will fade night/day out */
+  background: #000;
+}
+.slide-layer {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 2s ease-in-out;
+  transform: scale(1.1); /* To allow Ken Burns */
+}
+.slide-layer.active {
+  opacity: 0.6; /* Semi-transparent to blend with vignette */
+  animation: kenBurns 20s linear infinite alternate;
+}
+@keyframes kenBurns {
+  0% { transform: scale(1.1) translate(0,0); }
+  100% { transform: scale(1.15) translate(-1%, -1%); }
+}
+
+.now-playing-display {
+  position: absolute;
+  top: 20px;
+  right: 4%;
+  text-align: right;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.5s;
+  background: rgba(15, 15, 20, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 16px 24px;
+  border-radius: 16px;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.now-playing-display.visible {
+  opacity: 1;
+}
+.np-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.np-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.np-artist {
+  font-size: 13px;
+  color: var(--text-secondary);
+}

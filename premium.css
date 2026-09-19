@@ -314,3 +314,93 @@ a, button, input {
   font-size: 13px;
   color: var(--text-secondary);
 }
+
+/* =========================================
+   DYNAMIC COLOR SYNC (APPLE MUSIC STYLE)
+========================================= */
+:root {
+  --dynamic-color: rgba(20, 20, 20, 0.8);
+  --dynamic-glow: rgba(20, 20, 20, 0.4);
+}
+
+.vignette-overlay {
+  background: linear-gradient(to bottom, rgba(20,20,20,0.8) 0%, rgba(20,20,20,0.2) 30%, var(--dynamic-glow) 60%, var(--dynamic-color) 100%) !important;
+  transition: background 2s ease-in-out;
+}
+
+.netflix-player-bar.floating-pill {
+  background: linear-gradient(135deg, rgba(10, 10, 12, 0.7) 0%, var(--dynamic-glow) 100%) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 40px var(--dynamic-glow), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+/* =========================================
+   ZEN MODE
+========================================= */
+body.zen-mode .netflix-nav,
+body.zen-mode .netflix-hero,
+body.zen-mode .now-playing-display,
+body.zen-mode .pomodoro-widget {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(-20px);
+  transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base transitions for leaving zen mode */
+.netflix-nav, .netflix-hero, .now-playing-display, .pomodoro-widget {
+  transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#zen-quotes-container {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 800px;
+  text-align: center;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+body.zen-mode #zen-quotes-container {
+  opacity: 1;
+}
+
+.zen-quote {
+  font-family: var(--font-bengali);
+  font-size: 36px;
+  font-weight: 300;
+  line-height: 1.4;
+  color: white;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+  opacity: 0;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  transition: opacity 2s ease;
+}
+.zen-quote.active {
+  opacity: 1;
+}
+
+/* Zen Toggle Button in Nav */
+.zen-toggle-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.3s;
+}
+.zen-toggle-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.4);
+}

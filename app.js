@@ -751,3 +751,18 @@ if (triviaTextEl) {
     
   }, 12000); // Cycle every 12 seconds
 }
+
+// Vinyl Ambience Hook
+const volVinyl = document.getElementById('vol-vinyl');
+const audioVinyl = document.getElementById('audio-vinyl');
+if(volVinyl && audioVinyl) {
+  volVinyl.addEventListener('input', (e) => {
+    const v = e.target.value / 100;
+    audioVinyl.volume = v;
+    if (v > 0 && audioVinyl.paused) {
+      audioVinyl.play().catch(e => console.log('Autoplay blocked for vinyl', e));
+    } else if (v === 0) {
+      audioVinyl.pause();
+    }
+  });
+}

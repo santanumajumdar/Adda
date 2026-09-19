@@ -234,3 +234,92 @@ setInterval(() => {
     }
   }
 }, 1000);
+
+// ==========================================
+// 7. Dynamic Apple Music Color Sync
+// ==========================================
+function updateDynamicColor(imgUrl) {
+  const img = new Image();
+  img.crossOrigin = 'Anonymous';
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 1;
+    canvas.height = 1;
+    try {
+      ctx.drawImage(img, 0, 0, 1, 1);
+      const data = ctx.getImageData(0, 0, 1, 1).data;
+      const r = data[0], g = data[1], b = data[2];
+      
+      // We darken the extracted color heavily so it fits the dark mode cinematic theme
+      const darkColor = `rgba(${r*0.15}, ${g*0.15}, ${b*0.15}, 0.9)`;
+      const glowColor = `rgba(${r*0.3}, ${g*0.3}, ${b*0.3}, 0.5)`;
+      
+      document.documentElement.style.setProperty('--dynamic-color', darkColor);
+      document.documentElement.style.setProperty('--dynamic-glow', glowColor);
+    } catch(e) {
+      console.log('CORS blocked color extraction. Reverting to default dark theme.');
+      document.documentElement.style.setProperty('--dynamic-color', 'rgba(20, 20, 20, 0.8)');
+      document.documentElement.style.setProperty('--dynamic-glow', 'rgba(20, 20, 20, 0.4)');
+    }
+  };
+  // Use a CORS proxy to guarantee we can extract the color from the iTunes artwork
+  img.src = `https://api.allorigins.win/raw?url=${encodeURIComponent(imgUrl)}`;
+}
+
+// Hook the color sync into the track change logic where we fetch the iTunes art
+// (We will patch the fix_premium.js block to call this using sed below, but we can also just poll aestheticImages)
+let lastArtworkSync = null;
+setInterval(() => {
+  if (aestheticImages.length > 2) {
+    const latestArt = aestheticImages[aestheticImages.length - 1]; // usually the high res art
+    if (latestArt !== lastArtworkSync) {
+      lastArtworkSync = latestArt;
+      updateDynamicColor(latestArt);
+    }
+  }
+}, 3000);
+
+
+// ==========================================
+// 8. Zen Mode Engine
+// ==========================================
+const zenBtn = document.getElementById('zen-btn');
+if (zenBtn) {
+  zenBtn.addEventListener('click', () => {
+    document.body.classList.toggle('zen-mode');
+    
+    // Update button icon/text just in case it's visible (it fades out anyway, but good for state)
+    if(document.body.classList.contains('zen-mode')) {
+      zenBtn.innerHTML = `<i class="ph ph-sun"></i> Exit Zen`;
+    } else {
+      zenBtn.innerHTML = `<i class="ph ph-moon-stars"></i> Zen Mode`;
+    }
+  });
+}
+
+// Zen Quotes Rotator
+const quotes = document.querySelectorAll('.zen-quote');
+let currentQuote = 0;
+setInterval(() => {
+  if (document.body.classList.contains('zen-mode') && quotes.length > 0) {
+    quotes[currentQuote].classList.remove('active');
+    currentQuote = (currentQuote + 1) % quotes.length;
+    quotes[currentQuote].classList.add('active');
+  }
+}, 15000); // 15 seconds per quote
+
+// Exit Zen Mode on any mouse movement that crosses a threshold (like Netflix)
+let zenMouseX = 0, zenMouseY = 0;
+document.addEventListener('mousemove', (e) => {
+  if (!document.body.classList.contains('zen-mode')) return;
+  
+  if (zenMouseX === 0) { zenMouseX = e.clientX; zenMouseY = e.clientY; return; }
+  
+  const dist = Math.sqrt(Math.pow(e.clientX - zenMouseX, 2) + Math.pow(e.clientY - zenMouseY, 2));
+  if (dist > 150) { // If mouse moves significantly, exit zen mode
+    document.body.classList.remove('zen-mode');
+    zenBtn.innerHTML = `<i class="ph ph-moon-stars"></i> Zen Mode`;
+    zenMouseX = 0; zenMouseY = 0;
+  }
+});

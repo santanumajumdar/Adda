@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>বৈঠক | Boithak</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <link rel="apple-touch-icon" href="icon-192.jpg">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <!-- Background layers for transition -->
+    <div class="background" id="bg-night">
+      <img src="./bg.jpg" alt="Night Background" />
+      <div class="overlay night-overlay"></div>
+    </div>
+    <div class="background" id="bg-day" style="opacity: 0;">
+      <img src="./bg-day.jpg" alt="Day Background" />
+      <div class="overlay day-overlay"></div>
+    </div>
+
+    <!-- Rain Overlay -->
+    <div class="rain" id="rain-overlay"></div>
+
+    <header class="top-bar">
+      <div class="top-left-info">
+        <div class="time" id="clock">11:12 PM</div>
+        <div class="live-users" id="live-users-count">
+          <span class="pulsing-dot"></span> <span id="online-count">42</span> Online
+        </div>
+      </div>
+      <div class="playlist-categories">
+        <button class="category-btn active" data-playlist="PLcybHZcPcNLs">Indie Hits</button>
+        <button class="category-btn" data-playlist="PLuG0u9-H25_qQ8n1v7xK_Iq-fX9J3p9qX">Bengali Melodies</button>
+        <button class="category-btn" data-playlist="PLTQy09mTrXIU">Retro Classics</button>
+        <button class="category-btn" data-playlist="USER_REQUESTED">Requested Songs</button>
+      </div>
+      <div class="top-controls">
+        <button class="menu-btn" id="ambience-btn" aria-label="Ambience">
+          <i class="ph ph-waves"></i>
+        </button>
+        <button class="menu-btn" id="chat-toggle-btn" aria-label="Chat">
+          <i class="ph ph-chat-teardrop-dots"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="center-content">
+      <h1 class="title-bengali">আড্ডা</h1>
+      <h2 class="title-english">adda</h2>
+    </main>
+
+    <section class="trivia-section">
+      <p class="trivia-label">ADDA TRIVIA</p>
+      <div class="trivia-content">
+        <p id="trivia-text">The word 'adda' describes the quintessential Bengali cultural tradition of free-flowing, intellectual, and informal conversation among friends.</p>
+        <i class="ph ph-caret-right"></i>
+      </div>
+    </section>
+
+    <!-- YouTube Player Container (Hidden) -->
+    <div id="player" style="display: none;"></div>
+
+    <div class="player-container">
+      <div class="player-glass">
+        <div class="track-info">
+          <div class="album-art">
+            <img id="track-thumbnail" src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=50&h=50&fit=crop" alt="Album Art">
+          </div>
+          <div class="track-details">
+            <div class="track-title-wrapper">
+              <div class="track-title" id="track-title">Loading track...</div>
+              <div class="equalizer" id="equalizer">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            <div class="track-time">
+              <span id="current-time">0:00</span> / <span id="duration-time">0:00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="control-btn" id="shuffle-btn"><i class="ph ph-shuffle"></i></button>
+          <button class="control-btn" id="prev-btn"><i class="ph ph-skip-back-circle"></i></button>
+          <button class="control-btn play-pause-btn" id="play-pause-btn"><i class="ph ph-play-circle"></i></button>
+          <button class="control-btn" id="next-btn"><i class="ph ph-skip-forward-circle"></i></button>
+          <button class="control-btn" id="repeat-btn"><i class="ph ph-repeat"></i></button>
+        </div>
+
+        <div class="progress-bar-container" id="progress-container">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="extra-controls">
+          <div class="volume-container">
+            <i class="ph ph-speaker-high" id="mute-btn"></i>
+            <input type="range" id="volume-slider" min="0" max="100" value="100" class="volume-slider">
+          </div>
+          <button class="control-btn" id="playlist-btn"><i class="ph ph-list"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Playlist Sidebar -->
+    <div class="playlist-sidebar" id="playlist-sidebar">
+      <div class="sidebar-header">
+        <h3>Up Next</h3>
+        <button class="close-btn" id="close-playlist-btn"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="custom-playlist-input">
+        <input type="text" id="custom-playlist-url" placeholder="Paste YouTube Playlist URL...">
+        <button id="load-custom-playlist"><i class="ph ph-arrow-right"></i></button>
+      </div>
+      <div class="playlist-items" id="playlist-items">
+        <!-- Items generated by JS -->
+      </div>
+    </div>
+
+    <!-- Chat Sidebar (The Adda) -->
+    <div class="chat-sidebar" id="chat-sidebar">
+      <div class="sidebar-header">
+        <h3>The Adda (Live)</h3>
+        <button class="close-btn" id="close-chat-btn"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="chat-messages" id="chat-messages" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+        <div class="chat-placeholder" style="text-align: center; opacity: 0.7;">
+          <i class="ph ph-rocket-launch" style="font-size: 32px; margin-bottom: 12px; display: block;"></i>
+          Live Global Chat is<br><strong>Coming Soon!</strong>
+        </div>
+      </div>
+      <div class="chat-input-area" style="opacity: 0.5; pointer-events: none;">
+        <input type="text" id="chat-input" placeholder="Chat unavailable..." disabled>
+        <button id="send-chat-btn" disabled><i class="ph ph-paper-plane-right"></i></button>
+      </div>
+    </div>
+
+    <!-- Ambience Panel -->
+    <div class="ambience-panel" id="ambience-panel">
+      <div class="panel-header">
+        <h3>Ambience Mixer</h3>
+        <button class="close-btn" id="close-ambience-btn"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="panel-content">
+        <div class="slider-row">
+          <i class="ph ph-cloud-rain"></i>
+          <input type="range" id="vol-rain" min="0" max="100" value="0" class="volume-slider">
+        </div>
+        <div class="slider-row">
+          <i class="ph ph-car-profile"></i>
+          <input type="range" id="vol-street" min="0" max="100" value="0" class="volume-slider">
+        </div>
+        <div class="slider-row">
+          <i class="ph ph-coffee"></i>
+          <input type="range" id="vol-cafe" min="0" max="100" value="0" class="volume-slider">
+        </div>
+      </div>
+    </div>
+
+    <!-- Pomodoro Timer Widget -->
+    <div class="pomodoro-widget" id="pomodoro-widget">
+      <div class="pomodoro-header">
+        <i class="ph ph-timer"></i>
+        <span id="pomo-mode">Focus</span>
+      </div>
+      <div class="pomodoro-time" id="pomo-time">25:00</div>
+      <div class="pomodoro-controls">
+        <button id="pomo-play"><i class="ph ph-play"></i></button>
+        <button id="pomo-reset"><i class="ph ph-arrow-counter-clockwise"></i></button>
+        <button id="pomo-pip" title="Pop Out Mini Player"><i class="ph ph-squares-four"></i></button>
+      </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="audio-rain" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_88447d2642.mp3?filename=soft-rain-ambient-111154.mp3" loop></audio>
+    <audio id="audio-street" src="https://cdn.pixabay.com/download/audio/2022/02/07/audio_65cf233368.mp3?filename=city-traffic-outdoor-6414.mp3" loop></audio>
+    <audio id="audio-cafe" src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=cafe-background-noise-111160.mp3" loop></audio>
+    <audio id="audio-chime" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=success-1-6297.mp3"></audio>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="./app.js"></script>
+    
+    <!-- Service Worker Registration (Required to trigger the kill switch) -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').then(registration => {
+            console.log('ServiceWorker registration successful to trigger kill switch.');
+            // Also explicitly unregister all of them from the client side just to be safe
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              for(let r of registrations) {
+                r.unregister();
+                console.log('ServiceWorker unregistered successfully.');
+              }
+            });
+          });
+        });
+      }
+    </script>
+
+    <!-- PiP Template (Hidden) -->
+    <template id="pip-template">
+      <div class="pip-container glass-bg">
+        <div class="pip-pomo-mode" id="pip-pomo-mode">Focus</div>
+        <div class="pip-pomo-time" id="pip-pomo-time">25:00</div>
+        <div class="pip-track-info">
+          <i class="ph ph-music-notes"></i>
+          <span id="pip-track-title">Loading...</span>
+        </div>
+      </div>
+    </template>
+  </body>
+</html>

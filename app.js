@@ -297,7 +297,7 @@ function onYouTubeIframeAPIReady() {
     playerVars: {
       listType: 'playlist',
       list: currentPlaylistId,
-      autoplay: 1,
+      autoplay: 0,
       controls: 0,
       disablekb: 1,
       modestbranding: 1
@@ -320,7 +320,7 @@ function onPlayerReady(event) {
     customPlaylistIndex = 0;
     playCustomSong(0);
   } else {
-    player.loadPlaylist({
+    player.cuePlaylist({
       list: currentPlaylistId,
       listType: 'playlist',
       index: 0,

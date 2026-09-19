@@ -162,7 +162,7 @@ function startSlideshow() {
   }, 12000); // 12 seconds per slide
 }
 
-// Hook into Track Changes
+// Hook into Track Changes & Real-Time Internet Image Fetching
 setInterval(() => {
   if (typeof player !== 'undefined' && typeof player.getVideoData === 'function') {
     const videoData = player.getVideoData();
@@ -170,24 +170,59 @@ setInterval(() => {
       if (videoData.video_id !== currentVideoId) {
         currentVideoId = videoData.video_id;
         
+        const title = videoData.title || 'Unknown Track';
+        const artist = videoData.author || 'Unknown Artist';
+        
         // Update Now Playing Info
-        document.getElementById('np-title').textContent = videoData.title || 'Unknown Track';
-        document.getElementById('np-artist').textContent = videoData.author || 'Unknown Artist';
+        document.getElementById('np-title').textContent = title;
+        document.getElementById('np-artist').textContent = artist;
         npDisplay.classList.add('visible');
         
-        // Inject YouTube thumbnail into the slideshow mix (at index 2)
-        const thumbUrl = `https://img.youtube.com/vi/${videoData.video_id}/maxresdefault.jpg`;
-        aestheticImages[2] = thumbUrl; 
-        
-        // Immediately crossfade to the song's thumbnail for immersion
-        crossfadeSlide(thumbUrl);
-        
-        // Restart the slideshow timer
+        // Reset slideshow array to the YouTube thumbnail initially
+        const ytThumb = `https://img.youtube.com/vi/${currentVideoId}/maxresdefault.jpg`;
+        aestheticImages.splice(2); // Clear previous track's internet images
+        aestheticImages[2] = ytThumb;
+        crossfadeSlide(ytThumb);
         startSlideshow();
+
+        // 1. Fetch Album/Movie Art from iTunes API
+        const cleanTitle = title.replace(/(\(|\[).*(\)|\])/g, '').split('-')[0].trim();
+        fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(cleanTitle + ' ' + artist)}&limit=3&entity=song`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.results) {
+              data.results.forEach(track => {
+                if (track.artworkUrl100) {
+                  // Get extremely high-res movie/album art
+                  const highResArt = track.artworkUrl100.replace('100x100bb', '1000x1000bb');
+                  if (!aestheticImages.includes(highResArt)) {
+                    aestheticImages.push(highResArt);
+                  }
+                }
+              });
+            }
+          }).catch(err => console.log('iTunes fetch failed:', err));
+
+        // 2. Fetch Real Artist Photo from Wikipedia
+        // Clean artist name (remove 'VEVO', 'Official', etc.)
+        const cleanArtist = artist.replace(/VEVO|Official|Topic/ig, '').trim().replace(/ /g, '_');
+        fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&titles=${encodeURIComponent(cleanArtist)}&origin=*`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.query && data.query.pages) {
+              const pages = data.query.pages;
+              const pageId = Object.keys(pages)[0];
+              if (pageId !== "-1" && pages[pageId].original) {
+                const artistPhoto = pages[pageId].original.source;
+                if (!aestheticImages.includes(artistPhoto)) {
+                  aestheticImages.push(artistPhoto);
+                }
+              }
+            }
+          }).catch(err => console.log('Wiki fetch failed:', err));
       }
     } else {
       npDisplay.classList.remove('visible');
     }
   }
 }, 1000);
-

@@ -170,12 +170,12 @@ setInterval(() => {
       if (videoData.video_id !== currentVideoId) {
         currentVideoId = videoData.video_id;
         
-        const title = videoData.title || 'Unknown Track';
-        const artist = videoData.author || 'Unknown Artist';
+        let title = videoData.title || 'Unknown Track';
+        let artist = videoData.author || 'Unknown Artist';
         
-        // Update Now Playing Info
+        // Show initial loading info
         document.getElementById('np-title').textContent = title;
-        document.getElementById('np-artist').textContent = artist;
+        document.getElementById('np-artist').textContent = (artist === 'Unknown Artist' ? 'Fetching Details...' : artist);
         npDisplay.classList.add('visible');
         
         // Reset slideshow array to the YouTube thumbnail initially
@@ -185,12 +185,21 @@ setInterval(() => {
         crossfadeSlide(ytThumb);
         startSlideshow();
 
+        // Clean the title for better iTunes searching
+        // E.g., "Hai Apna Dil To Aawara (happy)" -> "Hai Apna Dil To Aawara"
+        let cleanSearchTerm = title.replace(/(\(|\[).*(\)|\])/g, '').split('|')[0].split('-')[0].trim();
+        
         // 1. Fetch Album/Movie Art from iTunes API
-        const cleanTitle = title.replace(/(\(|\[).*(\)|\])/g, '').split('-')[0].trim();
-        fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(cleanTitle + ' ' + artist)}&limit=3&entity=song`)
+        fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(cleanSearchTerm)}&limit=5&entity=song`)
           .then(res => res.json())
           .then(data => {
-            if (data && data.results) {
+            if (data && data.results && data.results.length > 0) {
+              const bestMatch = data.results[0];
+              
+              // Update the UI with the ACTUAL real-world artist and track name from iTunes Database!
+              if (bestMatch.trackName) document.getElementById('np-title').textContent = bestMatch.trackName;
+              if (bestMatch.artistName) document.getElementById('np-artist').textContent = bestMatch.artistName;
+
               data.results.forEach(track => {
                 if (track.artworkUrl100) {
                   // Get extremely high-res movie/album art
@@ -200,26 +209,25 @@ setInterval(() => {
                   }
                 }
               });
+              
+              // Now that we have a real artist name, fetch their photo from Wikipedia!
+              let realArtist = bestMatch.artistName.replace(/ /g, '_');
+              fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&titles=${encodeURIComponent(realArtist)}&origin=*`)
+                .then(res => res.json())
+                .then(wikiData => {
+                  if (wikiData && wikiData.query && wikiData.query.pages) {
+                    const pages = wikiData.query.pages;
+                    const pageId = Object.keys(pages)[0];
+                    if (pageId !== "-1" && pages[pageId].original) {
+                      const artistPhoto = pages[pageId].original.source;
+                      if (!aestheticImages.includes(artistPhoto)) {
+                        aestheticImages.push(artistPhoto);
+                      }
+                    }
+                  }
+                }).catch(err => console.log('Wiki fetch failed:', err));
             }
           }).catch(err => console.log('iTunes fetch failed:', err));
-
-        // 2. Fetch Real Artist Photo from Wikipedia
-        // Clean artist name (remove 'VEVO', 'Official', etc.)
-        const cleanArtist = artist.replace(/VEVO|Official|Topic/ig, '').trim().replace(/ /g, '_');
-        fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&titles=${encodeURIComponent(cleanArtist)}&origin=*`)
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.query && data.query.pages) {
-              const pages = data.query.pages;
-              const pageId = Object.keys(pages)[0];
-              if (pageId !== "-1" && pages[pageId].original) {
-                const artistPhoto = pages[pageId].original.source;
-                if (!aestheticImages.includes(artistPhoto)) {
-                  aestheticImages.push(artistPhoto);
-                }
-              }
-            }
-          }).catch(err => console.log('Wiki fetch failed:', err));
       }
     } else {
       npDisplay.classList.remove('visible');

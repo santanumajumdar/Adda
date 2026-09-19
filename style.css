@@ -50,6 +50,9 @@ body {
   object-fit: cover;
   animation: slowDrift 60s ease-in-out infinite;
   will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
 }
 
 .overlay {

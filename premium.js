@@ -82,3 +82,15 @@ setInterval(() => {
     }
   }
 }, 500);
+
+// 5. Vinyl Record Animation
+setInterval(() => {
+  const vinyl = document.querySelector('.vinyl-container');
+  if (vinyl) {
+    if (typeof isPlaying !== 'undefined' && isPlaying) {
+      vinyl.classList.add('spinning');
+    } else {
+      vinyl.classList.remove('spinning');
+    }
+  }
+}, 500);

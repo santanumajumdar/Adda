@@ -85,17 +85,14 @@
     <!-- Hidden YouTube Player -->
     <div id="player" style="display: none;"></div>
 
-    <!-- Netflix-style Bottom Player Bar -->
-    <div class="netflix-player-bar">
-      <!-- Progress Bar (spanning top edge) -->
-      <div class="progress-bar-container" id="progress-container">
-        <div class="progress-bar" id="progress-bar"></div>
-      </div>
-
+    <!-- Premium Floating Glass Player -->
+    <div class="netflix-player-bar floating-pill" id="premium-player">
       <div class="player-bar-content">
-        <!-- Left: Track Info -->
         <div class="player-left">
-          <img id="track-thumbnail" src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=50&h=50&fit=crop" alt="Album Art">
+          <div class="vinyl-container">
+            <img id="track-thumbnail" src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=50&h=50&fit=crop" alt="Album Art">
+            <div class="vinyl-hole"></div>
+          </div>
           <div class="track-meta">
             <div class="track-title-wrapper">
               <span class="track-title" id="track-title">Loading track...</span>
@@ -106,26 +103,24 @@
             <div class="category-indicator">Indie Hits</div>
           </div>
         </div>
-
-        <!-- Center: Playback Controls -->
         <div class="player-center">
           <div class="playback-controls">
             <button class="control-btn" id="shuffle-btn"><i class="ph ph-shuffle"></i></button>
             <button class="control-btn" id="prev-btn"><i class="ph ph-skip-back-fill"></i></button>
-            <!-- Play btn is hijacked above in hero, we need a small one here too for UX, but app.js binds to ID. 
-                 To keep JS happy, we will hide the hero button's ID role or map them.
-                 Actually, app.js binds to #play-pause-btn. I put it in the hero. I'll put it here and use a generic class for hero.
-                 Wait, I MUST fix the IDs so it works. -->
             <button class="control-btn play-circle-btn" id="bottom-play-btn"><i class="ph ph-play-circle"></i></button>
             <button class="control-btn" id="next-btn"><i class="ph ph-skip-forward-fill"></i></button>
             <button class="control-btn" id="repeat-btn"><i class="ph ph-repeat"></i></button>
           </div>
-          <div class="track-time">
-            <span id="current-time">0:00</span> / <span id="duration-time">0:00</span>
+          <div class="scrubber-row">
+            <span class="track-time-text" id="current-time">0:00</span>
+            <div class="progress-bar-container" id="progress-container">
+              <div class="progress-bar" id="progress-bar">
+                <div class="progress-thumb"></div>
+              </div>
+            </div>
+            <span class="track-time-text" id="duration-time">0:00</span>
           </div>
         </div>
-
-        <!-- Right: Extra Controls -->
         <div class="player-right">
           <button class="control-btn" id="playlist-btn"><i class="ph ph-list-dashes"></i></button>
           <div class="volume-container">

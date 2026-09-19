@@ -315,6 +315,9 @@ function onPlayerReady(event) {
   player.setVolume(currentVolume);
   
   // Force load the initial playlist (fixes bug where playerVars playlist initialization hangs)
+  // Safe Autoplay Attempt
+  setTimeout(() => player.playVideo(), 1000);
+
   if (currentPlaylistId === 'USER_REQUESTED') {
     isCustomPlaylistActive = true;
     customPlaylistIndex = 0;
@@ -591,6 +594,9 @@ categoryBtns.forEach(btn => {
     if (newPlaylist && newPlaylist !== currentPlaylistId) {
       currentPlaylistId = newPlaylist;
       
+  // Safe Autoplay Attempt
+  setTimeout(() => player.playVideo(), 1000);
+
       if (currentPlaylistId === 'USER_REQUESTED') {
         isCustomPlaylistActive = true;
         customPlaylistIndex = 0;
